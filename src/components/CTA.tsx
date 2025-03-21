@@ -2,8 +2,15 @@
 import React from 'react';
 import PrimaryButton from './PrimaryButton';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CTA = () => {
+  const navigate = useNavigate();
+
+  const handleExploreClick = () => {
+    navigate('/signup');
+  };
+
   return (
     <section className="py-20 px-6 bg-chatsector-black text-white relative overflow-hidden">
       {/* Background gradient effect */}
@@ -21,7 +28,7 @@ const CTA = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-          <PrimaryButton size="lg" className="w-full sm:w-auto">
+          <PrimaryButton size="lg" className="w-full sm:w-auto" onClick={handleExploreClick}>
             Start Researching Now
           </PrimaryButton>
           
@@ -29,6 +36,7 @@ const CTA = () => {
             variant="secondary" 
             size="lg" 
             className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border-white/20"
+            onClick={() => navigate('/signup')}
           >
             <span className="flex items-center">
               See Demo <ArrowRight size={18} className="ml-2" />

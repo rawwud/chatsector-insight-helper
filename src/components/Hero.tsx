@@ -4,8 +4,15 @@ import PrimaryButton from './PrimaryButton';
 import ChatDemo from './ChatDemo';
 import Logo from './Logo';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleExploreClick = () => {
+    navigate('/signup');
+  };
+
   return (
     <section className="pt-32 pb-16 md:pt-40 md:pb-24 px-6">
       <div className="container mx-auto">
@@ -24,11 +31,11 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-              <PrimaryButton size="lg">
+              <PrimaryButton size="lg" onClick={handleExploreClick}>
                 Explore Your Sector
               </PrimaryButton>
               
-              <PrimaryButton variant="secondary" size="lg">
+              <PrimaryButton variant="secondary" size="lg" onClick={() => navigate('/signup')}>
                 <span className="flex items-center">
                   See How It Works <ArrowRight size={18} className="ml-2" />
                 </span>
