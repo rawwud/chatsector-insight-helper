@@ -7,7 +7,7 @@ const HowItWorks = () => {
     {
       icon: <MessageSquare className="w-12 h-12 text-white" />,
       title: "Enter Your Industry",
-      description: "Simply tell Chatsector about your industry or role to get started. The more specific you are, the more tailored your insights will be.",
+      description: "Simply tell Chatsector about your industry or role to get started. The more specific you are, the more tailored your research will be.",
       color: "bg-chatsector-orange",
       delay: "0.1s"
     },
@@ -21,7 +21,7 @@ const HowItWorks = () => {
     {
       icon: <LineChart className="w-12 h-12 text-white" />,
       title: "Gain Clarity",
-      description: "Receive detailed insights, visualized data, and actionable recommendations that you can implement immediately or save for future reference.",
+      description: "Receive detailed research, visualized data, and actionable recommendations that you can implement immediately or save for future reference.",
       color: "bg-chatsector-orange",
       delay: "0.3s"
     }
@@ -31,11 +31,11 @@ const HowItWorks = () => {
     <section id="how-it-works" className="py-20 px-6">
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="section-title mb-6 animate-fade-up">
+          <h2 className="font-libre text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-up">
             How <span className="text-chatsector-orange">Chatsector</span> Works
           </h2>
           <p className="section-description animate-fade-up" style={{ animationDelay: "0.1s" }}>
-            Getting industry insights has never been easier. Follow these simple steps to unlock the power of AI-driven research.
+            Accessing industry research has never been easier. Follow these simple steps to unlock the power of AI-driven research.
           </p>
         </div>
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import PrimaryButton from './PrimaryButton';
 import ChatDemo from './ChatDemo';
+import Logo from './Logo';
 import { ArrowRight } from 'lucide-react';
 
 const Hero = () => {
@@ -11,15 +12,15 @@ const Hero = () => {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           <div className="lg:w-1/2 text-center lg:text-left">
             <div className="inline-block px-3 py-1 mb-6 text-sm font-medium text-chatsector-orange bg-chatsector-orange/10 rounded-full animate-fade-in">
-              Your AI-Powered Industry Analyst
+              Your AI-Powered Industry Research Assistant
             </div>
             
-            <h1 className="section-title mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-              Chatsector: <span className="text-chatsector-orange">Insights</span> for Every Industry at Your Fingertips
+            <h1 className="font-libre text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+              Chatsector: <span className="text-chatsector-orange">Deep Research</span> for Your Industry
             </h1>
             
             <p className="text-lg md:text-xl text-chatsector-dark-gray/80 mb-8 max-w-xl mx-auto lg:mx-0 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-              Get immediate, detailed insights on trends, market analysis, and competitive intelligence for your specific industry through intuitive AI-powered conversations.
+              Access comprehensive industry research, market analysis, and competitive intelligence through intuitive AI-powered conversations.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-up" style={{ animationDelay: "0.3s" }}>

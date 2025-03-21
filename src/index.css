@@ -79,7 +79,7 @@
   }
   
   .section-title {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold leading-tight;
+    @apply font-libre text-4xl md:text-5xl lg:text-6xl font-bold leading-tight;
   }
   
   .section-description {

@@ -1,18 +1,18 @@
 
 import React from 'react';
-import { MessageSquare, LineChart, Globe, Lightbulb, TrendingUp, FileText } from 'lucide-react';
+import { MessageSquare, LineChart, Globe, Lightbulb, Search, FileText } from 'lucide-react';
 
 const Features = () => {
   const features = [
     {
       icon: <MessageSquare className="w-10 h-10 text-chatsector-orange" />,
-      title: "Conversational Insights",
-      description: "Engage in natural, intuitive conversations to get the information you need about your industry."
+      title: "Conversational Research",
+      description: "Engage in natural, intuitive conversations to access comprehensive research about your industry."
     },
     {
-      icon: <TrendingUp className="w-10 h-10 text-chatsector-orange" />,
-      title: "Real-Time Trend Analysis",
-      description: "Stay ahead with up-to-date information on emerging trends and shifts in your market."
+      icon: <Search className="w-10 h-10 text-chatsector-orange" />,
+      title: "Real-Time Market Analysis",
+      description: "Stay informed with current data on market shifts and changes in your sector."
     },
     {
       icon: <LineChart className="w-10 h-10 text-chatsector-orange" />,
@@ -40,11 +40,11 @@ const Features = () => {
     <section id="features" className="py-20 px-6 bg-chatsector-light-gray">
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="section-title mb-6 animate-fade-up">
-            Industry Insights, <span className="text-chatsector-orange">Reimagined</span>
+          <h2 className="font-libre text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-up">
+            Industry Knowledge, <span className="text-chatsector-orange">Reimagined</span>
           </h2>
           <p className="section-description animate-fade-up" style={{ animationDelay: "0.1s" }}>
-            Discover how Chatsector transforms the way you understand and navigate your industry landscape.
+            Discover how Chatsector transforms the way you research and navigate your industry landscape.
           </p>
         </div>
 

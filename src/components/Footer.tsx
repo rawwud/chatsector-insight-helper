@@ -1,5 +1,6 @@
 
 import React from 'react';
+import Logo from './Logo';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -17,7 +18,7 @@ const Footer = () => {
     {
       title: "Resources",
       links: [
-        { name: "Blog", href: "#" },
+        { name: "Research Database", href: "#" },
         { name: "Documentation", href: "#" },
         { name: "Guides", href: "#" },
         { name: "API", href: "#" },
@@ -41,12 +42,13 @@ const Footer = () => {
           {/* Logo and description */}
           <div className="lg:col-span-2">
             <div className="flex items-center mb-4">
-              <a href="/" className="text-2xl font-bold text-chatsector-black">
-                Chatsector
+              <a href="/" className="flex items-center">
+                <Logo className="w-12 h-12 mr-2" />
+                <span className="text-2xl font-bold text-chatsector-black font-libre">Chatsector</span>
               </a>
             </div>
             <p className="text-chatsector-dark-gray/80 mb-6 max-w-md">
-              Transforming industry research through AI-powered conversations. Get real-time insights, market analysis, and strategic recommendations for your specific sector.
+              Transforming industry research through AI-powered conversations. Get in-depth knowledge, market analysis, and strategic recommendations for your specific sector.
             </p>
             <div className="flex items-center space-x-4">
               <a href="#" className="text-chatsector-dark-gray hover:text-chatsector-orange transition-colors">

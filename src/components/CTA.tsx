@@ -12,17 +12,17 @@ const CTA = () => {
       
       <div className="container mx-auto max-w-4xl relative z-10">
         <div className="text-center mb-12">
-          <h2 className="section-title mb-6 animate-fade-up">
+          <h2 className="font-libre text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-up">
             Ready to Transform Your <span className="text-chatsector-orange">Industry Knowledge</span>?
           </h2>
           <p className="section-description text-white/80 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: "0.1s" }}>
-            Join thousands of professionals who are leveraging AI-powered insights to stay ahead in their industries. No more endless research—just ask and learn.
+            Join professionals who are leveraging AI-powered research to stay informed in their industries. No more hours of manual research—just ask and learn.
           </p>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up" style={{ animationDelay: "0.2s" }}>
           <PrimaryButton size="lg" className="w-full sm:w-auto">
-            Start Exploring Now
+            Start Researching Now
           </PrimaryButton>
           
           <PrimaryButton 

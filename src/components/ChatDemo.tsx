@@ -7,10 +7,10 @@ const ChatDemo = () => {
   const [displayedText, setDisplayedText] = useState('');
   
   const conversation = [
-    { isUser: true, message: "Tell me about the latest trends in digital marketing." },
-    { isUser: false, message: "In digital marketing, AI-driven personalization, voice search optimization, and interactive content are growing rapidly. Video content continues to dominate, especially short-form videos on platforms like TikTok and Instagram Reels." },
-    { isUser: true, message: "What are the key metrics I should track?" },
-    { isUser: false, message: "For digital marketing, focus on conversion rate, customer acquisition cost (CAC), customer lifetime value (CLV), engagement metrics, and ROI. These provide a comprehensive view of your marketing effectiveness." },
+    { isUser: true, message: "What are the key market drivers in digital marketing for 2024?" },
+    { isUser: false, message: "In digital marketing for 2024, AI-driven personalization, privacy-focused strategies, and programmatic advertising are the main market drivers. First-party data collection is increasingly valuable as third-party cookies phase out." },
+    { isUser: true, message: "Which metrics should I monitor for my campaigns?" },
+    { isUser: false, message: "For digital marketing campaigns, focus on conversion rate, customer acquisition cost (CAC), customer lifetime value (CLV), engagement metrics, and overall ROI. These provide a comprehensive view of your marketing effectiveness." },
   ];
   
   useEffect(() => {
@@ -73,7 +73,7 @@ const ChatDemo = () => {
       <div className="bg-chatsector-light-gray py-3 px-4 border-b border-chatsector-light-gray">
         <div className="flex items-center">
           <div className="w-3 h-3 rounded-full bg-chatsector-orange mr-2"></div>
-          <div className="font-medium">Chatsector Assistant</div>
+          <div className="font-medium">Chatsector Research Assistant</div>
         </div>
       </div>
       
@@ -102,7 +102,7 @@ const ChatDemo = () => {
         <div className="flex items-center bg-chatsector-light-gray rounded-lg py-2 px-3">
           <input
             type="text"
-            placeholder="Ask anything about your industry..."
+            placeholder="Ask about your industry research..."
             className="flex-1 bg-transparent outline-none text-sm"
             disabled
           />
