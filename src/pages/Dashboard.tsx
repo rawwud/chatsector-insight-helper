@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import WelcomeCard from '../components/WelcomeCard';
 import { ArrowUp, ChevronDown, Settings, LogOut, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import Groq from 'groq-sdk';
+import { Groq } from 'groq-sdk';
 
 const Dashboard = () => {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -34,9 +34,10 @@ const Dashboard = () => {
       setIsLoading(true);
 
       try {
-        // Initialize GROQ client with updated API key
+        // Initialize GROQ client with updated API key and dangerouslyAllowBrowser option
         const groq = new Groq({
           apiKey: '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',
+          dangerouslyAllowBrowser: true, // Important: Allow browser usage
         });
 
         // Prepare correctly typed messages for GROQ API
