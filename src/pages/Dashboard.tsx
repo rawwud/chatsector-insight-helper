@@ -34,21 +34,21 @@ const Dashboard = () => {
       setIsLoading(true);
 
       try {
-        // Prepare messages for GROQ API
-        const messages = [
-          ...chatHistory.map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.content
-          })),
-          { role: 'user', content: userMessage }
-        ];
-
-        // Initialize GROQ client
+        // Initialize GROQ client with updated API key
         const groq = new Groq({
-          apiKey: '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', // This is a publishable key
+          apiKey: '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',
         });
 
-        // Make the API call
+        // Prepare correctly typed messages for GROQ API
+        const messages = [
+          ...chatHistory.map(msg => ({
+            role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+            content: msg.content
+          })),
+          { role: 'user' as const, content: userMessage }
+        ];
+
+        // Make the API call with fixed types
         const chatCompletion = await groq.chat.completions.create({
           messages,
           model: "llama-3.3-70b-versatile",
