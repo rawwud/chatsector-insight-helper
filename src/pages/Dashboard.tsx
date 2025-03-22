@@ -1,20 +1,19 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import Logo from '../components/Logo';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import WelcomeCard from '../components/WelcomeCard';
-import { ArrowUp, ChevronDown } from 'lucide-react';
+import { ArrowUp, ChevronDown, Settings, LogOut, Palette } from 'lucide-react';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [showWelcome, setShowWelcome] = useState(true);
   const [pageName, setPageName] = useState('New page');
   const [userInput, setUserInput] = useState('');
-  const [chatHistory, setCharHistory] = useState<{type: 'user' | 'ai', content: string}[]>([]);
+  const [chatHistory, setChatHistory] = useState<{type: 'user' | 'ai', content: string}[]>([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   
   const handleStartResearch = () => {
     setShowWelcome(false);
@@ -22,7 +21,7 @@ const Dashboard = () => {
 
   const handleSendMessage = () => {
     if (userInput.trim()) {
-      setCharHistory([...chatHistory, {type: 'user', content: userInput}, {type: 'ai', content: 'This is a placeholder AI response. The actual AI functionality will be implemented later.'}]);
+      setChatHistory([...chatHistory, {type: 'user', content: userInput}, {type: 'ai', content: 'This is a placeholder AI response. The actual AI functionality will be implemented later.'}]);
       setUserInput('');
     }
   };
@@ -52,26 +51,52 @@ const Dashboard = () => {
     }
   };
 
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, [isEditingTitle]);
+
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-48 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="bg-gray-200 rounded-md w-8 h-8 flex items-center justify-center text-gray-700 font-semibold">
-              U
+    <div className="min-h-screen flex">
+      {/* Sidebar - using a light grey background */}
+      <div className="w-48 bg-[#F1F1F1] flex flex-col">
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-[#e5e5e5] transition-colors">
+              <div className="flex items-center">
+                <Avatar className="h-8 w-8 bg-[#d9d9d9]">
+                  <AvatarFallback className="text-[#222222]">U</AvatarFallback>
+                </Avatar>
+                <span className="ml-2 text-sm font-medium text-[#222222]">user</span>
+              </div>
+              <ChevronDown size={16} className="text-[#737373]" />
             </div>
-            <span className="ml-2 text-sm font-medium">user</span>
-          </div>
-          <ChevronDown size={16} className="text-gray-500" />
-        </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-0 bg-white border border-gray-200 shadow-md rounded-md">
+            <div className="py-1">
+              <button className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-sm">
+                <Settings size={16} />
+                <span>Settings</span>
+              </button>
+              <button className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-sm">
+                <Palette size={16} />
+                <span>Customization</span>
+              </button>
+              <button className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-sm">
+                <LogOut size={16} />
+                <span>Logout</span>
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
         <div className="flex-grow">
           {/* Sidebar content will go here in the future */}
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-grow flex flex-col">
+      {/* Main content - using white background */}
+      <div className="flex-grow flex flex-col bg-white">
         {showWelcome ? (
           <div className="flex-grow flex items-center justify-center p-6">
             <WelcomeCard onStart={handleStartResearch} />
@@ -82,12 +107,13 @@ const Dashboard = () => {
             <div className="border-b border-gray-200 pb-4 mb-6">
               {isEditingTitle ? (
                 <input
+                  ref={titleInputRef}
                   type="text"
                   value={pageName}
                   onChange={handleTitleChange}
                   onBlur={handleTitleBlur}
                   onKeyDown={handleTitleKeyDown}
-                  className="text-4xl font-libre text-gray-400 bg-transparent border-none focus:outline-none"
+                  className="text-4xl font-libre text-gray-400 bg-transparent border-none focus:outline-none w-full"
                   autoFocus
                 />
               ) : (
@@ -111,9 +137,7 @@ const Dashboard = () => {
                   {chatHistory.map((message, index) => (
                     <div key={index} className="space-y-2">
                       {message.type === 'user' ? (
-                        <>
-                          <div className="text-lg">{message.content}</div>
-                        </>
+                        <div className="text-lg">{message.content}</div>
                       ) : (
                         <>
                           <div className="font-medium text-lg">Answer</div>
@@ -126,17 +150,17 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Input area */}
+            {/* Input area with specific styling from screenshot */}
             <div className="relative">
               <Input
                 placeholder="Ask about your sector"
-                className="pr-12 py-6 text-base rounded-full"
+                className="pr-12 py-6 text-base rounded-full bg-[#d9d9d9] border-none placeholder:text-[#a6a6a6] focus-visible:ring-0"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
               <Button 
-                className="absolute right-1 top-1 rounded-full w-10 h-10 p-0"
+                className="absolute right-1 top-1 rounded-full w-10 h-10 p-0 bg-[#737373] hover:bg-[#5a5a5a]"
                 onClick={handleSendMessage}
                 disabled={!userInput.trim()}
               >
