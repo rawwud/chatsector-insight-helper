@@ -6,6 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import WelcomeCard from '../components/WelcomeCard';
 import { ArrowUp, ChevronDown, Settings, LogOut, Palette } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import Groq from 'groq-sdk';
 
 const Dashboard = () => {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -13,16 +15,66 @@ const Dashboard = () => {
   const [userInput, setUserInput] = useState('');
   const [chatHistory, setChatHistory] = useState<{type: 'user' | 'ai', content: string}[]>([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   const handleStartResearch = () => {
     setShowWelcome(false);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (userInput.trim()) {
-      setChatHistory([...chatHistory, {type: 'user', content: userInput}, {type: 'ai', content: 'This is a placeholder AI response. The actual AI functionality will be implemented later.'}]);
+      // Add user message to chat history
+      setChatHistory(prev => [...prev, {type: 'user', content: userInput}]);
+      
+      // Clear input field
+      const userMessage = userInput;
       setUserInput('');
+      setIsLoading(true);
+
+      try {
+        // Prepare messages for GROQ API
+        const messages = [
+          ...chatHistory.map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+          })),
+          { role: 'user', content: userMessage }
+        ];
+
+        // Initialize GROQ client
+        const groq = new Groq({
+          apiKey: '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', // This is a publishable key
+        });
+
+        // Make the API call
+        const chatCompletion = await groq.chat.completions.create({
+          messages,
+          model: "llama-3.3-70b-versatile",
+          temperature: 0.7,
+          max_tokens: 1024,
+          top_p: 1,
+          stream: false
+        });
+
+        // Get the response content
+        const responseContent = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+        
+        // Add AI response to chat history
+        setChatHistory(prev => [...prev, {type: 'ai', content: responseContent}]);
+      } catch (error) {
+        console.error('Error calling GROQ API:', error);
+        toast({
+          title: "Error",
+          description: "Failed to get AI response. Please try again.",
+          variant: "destructive",
+        });
+        // Add a fallback error message to chat history
+        setChatHistory(prev => [...prev, {type: 'ai', content: "Sorry, I encountered an error while generating a response. Please try again."}]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -146,6 +198,12 @@ const Dashboard = () => {
                       )}
                     </div>
                   ))}
+                  {isLoading && (
+                    <div className="space-y-2">
+                      <div className="font-medium text-lg">Answer</div>
+                      <div className="text-lg">Thinking...</div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -158,11 +216,12 @@ const Dashboard = () => {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                disabled={isLoading}
               />
               <Button 
                 className="absolute right-1 top-1 rounded-full w-10 h-10 p-0 bg-[#737373] hover:bg-[#5a5a5a]"
                 onClick={handleSendMessage}
-                disabled={!userInput.trim()}
+                disabled={!userInput.trim() || isLoading}
               >
                 <ArrowUp size={18} />
               </Button>
