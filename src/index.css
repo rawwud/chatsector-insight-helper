@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -56,12 +57,20 @@
     @apply border-border;
   }
 
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-medium tracking-tight;
+  }
+  
+  ::selection {
+    @apply bg-orange-500/20 text-orange-800;
   }
 }
 
@@ -87,7 +96,8 @@
   }
   
   .feature-card {
-    @apply bg-white rounded-xl p-6 shadow-sm border border-chatsector-light-gray transition-all duration-300 hover:shadow-md;
+    @apply rounded-2xl px-6 py-8 border border-gray-100 transition-all duration-300
+    hover:shadow-elevation hover:border-transparent;
   }
   
   .typing-animation {
@@ -96,6 +106,101 @@
   
   .cursor-animation {
     @apply border-r-2 border-chatsector-orange animate-cursor-blink;
+  }
+  
+  .chip {
+    @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full;
+  }
+
+  .section {
+    @apply py-16 md:py-24;
+  }
+
+  .container-custom {
+    @apply px-4 md:px-6 w-full max-w-7xl mx-auto;
+  }
+  
+  .shadow-elevation {
+    @apply shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)];
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-glass;
+  }
+  
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md border border-white/10 shadow-glass;
+  }
+}
+
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent;
+  }
+  
+  .font-baskerville {
+    font-family: 'Libre Baskerville', serif;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  
+  .animate-fade-in-down {
+    animation: fadeInDown 0.5s ease-out forwards;
+  }
+  
+  .shadow-subtle {
+    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
+  }
+
+  .shadow-glass {
+    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -116,4 +221,177 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+/* Animation for fade-in effect */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Animation for token streaming effect */
+@keyframes fadeInToken {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeInToken {
+  animation: fadeInToken 0.2s ease-out forwards;
+}
+
+/* Pulsing animation for thinking state */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Animation for token streaming */
+@keyframes tokenStream {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.token-stream {
+  display: inline-block;
+  width: 100%;
+}
+
+.token-stream .token {
+  opacity: 0;
+  display: inline;
+  animation: tokenStream 0.15s ease-out forwards;
+}
+
+/* Fade-in animation for the customize button */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Table styles */
+.token-stream table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.token-stream table th,
+.token-stream table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.token-stream table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.token-stream table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.token-stream table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Add general markdown styles */
+.markdown-content {
+  width: 100%;
+}
+
+.markdown-content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.markdown-content table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.markdown-content table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.markdown-content table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.markdown-content code {
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  font-family: monospace;
+  padding: 0.2em 0.4em;
+}
+
+.markdown-content pre {
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+  padding-left: 2rem;
+  margin: 1rem 0;
+}
+
+.markdown-content li {
+  margin: 0.5rem 0;
 }

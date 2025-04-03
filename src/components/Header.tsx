@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
+import { Button } from './ui/button';
 import { Menu, X } from 'lucide-react';
-import PrimaryButton from './PrimaryButton';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -9,48 +9,72 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (!isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  };
+
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' 
-          : 'bg-transparent py-5'
+        isScrolled ? 'py-3 glass' : 'py-5 bg-transparent'
       }`}
     >
-      <div className="container mx-auto px-6 flex items-center justify-between">
+      <div className="container-custom flex items-center justify-between">
+        {/* Logo */}
         <div className="flex items-center">
-          <a href="/" className="text-2xl font-bold text-chatsector-black">
+          <Link to="/" className="text-2xl font-bold text-black">
             Chatsector
-          </a>
+          </Link>
         </div>
 
-        {/* Desktop Menu */}
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#features" className="text-chatsector-black hover:text-chatsector-orange transition-colors">
+          <a 
+            href="#features" 
+            className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors"
+          >
             Features
           </a>
-          <a href="#how-it-works" className="text-chatsector-black hover:text-chatsector-orange transition-colors">
-            How It Works
+          <a 
+            href="#demo" 
+            className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors"
+          >
+            Demo
           </a>
-          <a href="#faq" className="text-chatsector-black hover:text-chatsector-orange transition-colors">
-            FAQ
+          <a 
+            href="#sectors" 
+            className="text-sm font-medium text-gray-700 hover:text-orange-500 transition-colors"
+          >
+            Industries
           </a>
-          <PrimaryButton>
-            Explore Now
-          </PrimaryButton>
+          <Link to="/signup">
+            <Button className="bg-black text-white hover:bg-black/90 rounded-full px-6">
+              Get Started
+            </Button>
+          </Link>
         </nav>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu Toggle */}
         <button 
-          className="md:hidden text-chatsector-black" 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden text-gray-800 focus:outline-none" 
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -58,34 +82,37 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-md py-4 px-6 flex flex-col space-y-4 animate-fade-in">
-          <a 
-            href="#features" 
-            className="text-chatsector-black hover:text-chatsector-orange transition-colors py-2"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Features
-          </a>
-          <a 
-            href="#how-it-works" 
-            className="text-chatsector-black hover:text-chatsector-orange transition-colors py-2"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            How It Works
-          </a>
-          <a 
-            href="#faq" 
-            className="text-chatsector-black hover:text-chatsector-orange transition-colors py-2"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            FAQ
-          </a>
-          <PrimaryButton 
-            className="w-full text-center"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Explore Now
-          </PrimaryButton>
+        <div className="fixed inset-0 bg-white z-40 pt-20 px-4 flex flex-col animate-fade-in md:hidden">
+          <div className="flex flex-col space-y-6 items-center mt-10">
+            <a 
+              href="#features" 
+              className="text-lg font-medium text-gray-800"
+              onClick={toggleMobileMenu}
+            >
+              Features
+            </a>
+            <a 
+              href="#demo" 
+              className="text-lg font-medium text-gray-800"
+              onClick={toggleMobileMenu}
+            >
+              Demo
+            </a>
+            <a 
+              href="#sectors" 
+              className="text-lg font-medium text-gray-800"
+              onClick={toggleMobileMenu}
+            >
+              Industries
+            </a>
+            <Link to="/signup" onClick={toggleMobileMenu}>
+              <Button 
+                className="bg-black text-white hover:bg-black/90 rounded-full px-6 w-full mt-4"
+              >
+                Get Started
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
     </header>

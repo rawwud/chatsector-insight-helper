@@ -1,46 +1,28 @@
-
 import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
+import VideoSection from '../components/VideoSection';
+import WorkflowSection from '../components/WorkflowSection';
 import Features from '../components/Features';
-import HowItWorks from '../components/HowItWorks';
-import FAQ from '../components/FAQ';
-import CTA from '../components/CTA';
+import Demo from '../components/Demo';
+import IndustrySelector from '../components/IndustrySelector';
 import Footer from '../components/Footer';
 
 const Index = () => {
-  // Add smooth scrolling for anchor links
   useEffect(() => {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        
-        const target = document.querySelector(this.getAttribute('href') || '');
-        if (target) {
-          window.scrollTo({
-            top: target.getBoundingClientRect().top + window.scrollY - 100,
-            behavior: 'smooth'
-          });
-        }
-      });
-    });
-    
-    return () => {
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.removeEventListener('click', () => {});
-      });
-    };
+    document.title = 'Chatsector - AI-Powered Sector Research Assistant';
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Header />
       <main>
         <Hero />
+        <VideoSection />
+        <WorkflowSection />
         <Features />
-        <HowItWorks />
-        <FAQ />
-        <CTA />
+        <Demo />
+        <IndustrySelector />
       </main>
       <Footer />
     </div>

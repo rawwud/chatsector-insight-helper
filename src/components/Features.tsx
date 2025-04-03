@@ -1,65 +1,86 @@
-
 import React from 'react';
-import { MessageSquare, LineChart, Globe, Lightbulb, Search, FileText } from 'lucide-react';
+import ChipTag from './ui/ChipTag';
+import { ArrowRight, MessageSquare, BookOpen, Search, Book, Brain, FileText, Database, LayoutDashboard } from 'lucide-react';
 
 const Features = () => {
   const features = [
     {
-      icon: <MessageSquare className="w-10 h-10 text-chatsector-orange" />,
+      icon: <MessageSquare size={24} className="text-orange-500" />,
       title: "Conversational Research",
-      description: "Engage in natural, intuitive conversations to access comprehensive research about your industry."
+      description: "Engage with an AI specialist that understands your sector context and delivers knowledge through natural conversation.",
+      tag: "Research"
     },
     {
-      icon: <Search className="w-10 h-10 text-chatsector-orange" />,
-      title: "Real-Time Market Analysis",
-      description: "Stay informed with current data on market shifts and changes in your sector."
+      icon: <Search size={24} className="text-orange-500" />,
+      title: "Deep Sector Analysis",
+      description: "Get detailed analysis on academic publications, methodologies, and sector-specific knowledge.",
+      tag: "Analysis"
     },
     {
-      icon: <LineChart className="w-10 h-10 text-chatsector-orange" />,
-      title: "Data Visualization",
-      description: "Understand complex market data through clear, interactive charts and graphs."
+      icon: <Book size={24} className="text-orange-500" />,
+      title: "Literature Reviews",
+      description: "Quickly obtain comprehensive reviews of important literature in your field of expertise.",
+      tag: "Literature"
     },
     {
-      icon: <Lightbulb className="w-10 h-10 text-chatsector-orange" />,
-      title: "Strategic Recommendations",
-      description: "Receive actionable insights and strategic suggestions tailored to your specific challenges."
+      icon: <Brain size={24} className="text-orange-500" />,
+      title: "Intelligent Recommendations",
+      description: "Receive personalized research recommendations based on your background and interests.",
+      tag: "AI"
     },
     {
-      icon: <Globe className="w-10 h-10 text-chatsector-orange" />,
-      title: "Global Market Context",
-      description: "Understand your position within the global landscape and identify international opportunities."
+      icon: <FileText size={24} className="text-orange-500" />,
+      title: "Research Summaries",
+      description: "Complex publications transformed into clear, digestible summaries for better understanding.",
+      tag: "Summaries"
     },
     {
-      icon: <FileText className="w-10 h-10 text-chatsector-orange" />,
-      title: "Custom Reports",
-      description: "Generate comprehensive, shareable reports on any aspect of your industry."
+      icon: <LayoutDashboard size={24} className="text-orange-500" />,
+      title: "Custom Research Reports",
+      description: "Generate comprehensive reports on any aspect of your sector with a simple request.",
+      tag: "Reports"
     }
   ];
 
   return (
-    <section id="features" className="py-20 px-6 bg-chatsector-light-gray">
-      <div className="container mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-libre text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-up">
-            Industry Knowledge, <span className="text-chatsector-orange">Reimagined</span>
+    <section id="features" className="section bg-white">
+      <div className="container-custom">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <ChipTag variant="orange" className="mb-4 mx-auto">
+            Research Capabilities
+          </ChipTag>
+          <h2 className="text-3xl md:text-4xl font-baskerville mb-6">
+            Your Personal Sector Specialist,{' '}
+            <span className="text-gradient">Always Available</span>
           </h2>
-          <p className="section-description animate-fade-up" style={{ animationDelay: "0.1s" }}>
-            Discover how Chatsector transforms the way you research and navigate your industry landscape.
+          <p className="text-gray-700 text-balance">
+            Chatsector combines advanced AI with comprehensive sector knowledge to deliver research
+            that helps you make informed decisions about your field of expertise.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className="feature-card group animate-fade-up"
-              style={{ animationDelay: `${0.1 + index * 0.1}s` }}
+              className="feature-card group"
             >
-              <div className="p-3 mb-4 bg-chatsector-orange/10 rounded-lg inline-block transition-all duration-300 group-hover:bg-chatsector-orange/20">
+              <div className="mb-5 p-3 bg-orange-50 rounded-lg inline-block">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-              <p className="text-chatsector-dark-gray/80">{feature.description}</p>
+              <div className="mb-2 flex justify-between items-center">
+                <h3 className="font-semibold text-lg">{feature.title}</h3>
+                <ChipTag variant="muted">{feature.tag}</ChipTag>
+              </div>
+              <p className="text-gray-600 mb-4">
+                {feature.description}
+              </p>
+              <a 
+                href="#" 
+                className="inline-flex items-center text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors group-hover:underline"
+              >
+                Learn more <ArrowRight size={14} className="ml-1" />
+              </a>
             </div>
           ))}
         </div>

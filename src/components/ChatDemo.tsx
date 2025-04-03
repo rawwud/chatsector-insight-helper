@@ -7,11 +7,40 @@ const ChatDemo = () => {
   const [displayedText, setDisplayedText] = useState('');
   
   const conversation = [
-    { isUser: true, message: "What are the key market drivers in digital marketing for 2024?" },
-    { isUser: false, message: "In digital marketing for 2024, AI-driven personalization, privacy-focused strategies, and programmatic advertising are the main market drivers. First-party data collection is increasingly valuable as third-party cookies phase out." },
-    { isUser: true, message: "Which metrics should I monitor for my campaigns?" },
-    { isUser: false, message: "For digital marketing campaigns, focus on conversion rate, customer acquisition cost (CAC), customer lifetime value (CLV), engagement metrics, and overall ROI. These provide a comprehensive view of your marketing effectiveness." },
+    { 
+      isUser: true, 
+      message: "What best practices can we implement to reduce waste generation in our facility?" 
+    },
+    { 
+      isUser: false, 
+      message: 
+        "**Lean Manufacturing Practices**\n" +
+        "Implement lean production methods to streamline operations, minimize excess production, and reduce waste generation throughout the facility.\n\n" +
+        "**Recycling & Reuse Programs**\n" +
+        "Establish comprehensive recycling and reuse initiatives. Regular waste audits can help pinpoint high-waste areas and identify opportunities for resource recovery.\n\n" +
+        "**Employee Training & Awareness**\n" +
+        "Educate employees on sustainable practices and waste reduction techniques. Empowering staff with knowledge can drive behavior change and support continuous improvement.\n\n" +
+        "**Technology & Process Optimization**\n" +
+        "Invest in precision technology and machinery that minimize off-cuts and enhance production accuracy. Process improvements can lead to significant waste reduction.\n\n" +
+        "**Clear Metrics & Continuous Improvement**\n" +
+        "Set clear waste reduction goals and track progress using key performance indicators (KPIs). Continuous monitoring and iterative improvements help maintain long-term sustainability."
+    },
+    { 
+      isUser: true, 
+      message: "Where can I find a directory of reliable suppliers for the components I need to make custom machinery?" 
+    },
+    { 
+      isUser: false, 
+      message: 
+        "To source reliable suppliers for components needed in custom machinery manufacturing, consider utilizing the following reputable directories:\n\n" +
+        "• **Thomasnet.com**: A comprehensive platform connecting buyers with over 500,000 industrial suppliers, including OEMs, custom manufacturers, service companies, and distributors.\n\n" +
+        "• **MFG.com**: A global e-commerce marketplace that connects buyers with manufacturers offering contract manufacturing services, facilitating sourcing of custom-manufactured parts.\n\n" +
+        "• **IQS Directory**: Provides an extensive list of custom machinery manufacturers and suppliers, allowing for easy review and sourcing of companies that can design, engineer, and manufacture machinery to exact specifications.\n\n" +
+        "• **MachineShopWeb.com**: Features thousands of machine shops with various certifications, including ISO and AS9100, catering to different contract manufacturing needs."
+    }
   ];
+  
+
   
   useEffect(() => {
     if (currentMessageIndex < conversation.length) {
@@ -36,7 +65,7 @@ const ChatDemo = () => {
               setCurrentMessageIndex(prevIndex => prevIndex + 1);
             }, 2000);
           }
-        }, 30); // Typing speed
+        }, 15); // Typing speed
         
         return () => clearInterval(typingInterval);
       } else {
