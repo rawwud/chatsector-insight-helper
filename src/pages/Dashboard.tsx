@@ -30,6 +30,23 @@ import {
 } from "../components/ui/dropdown-menu";
 import { supabase } from '../lib/supabase';
 import axios from 'axios';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 interface PageData {
   id: string;
@@ -76,6 +93,15 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
   const { toast } = useToast();
   const [showSourcesSidebar, setShowSourcesSidebar] = useState(false);
   const [currentSources, setCurrentSources] = useState<{title: string, url: string, content: string}[]>([]);
+  const [isDeleteAllChatsDialogOpen, setIsDeleteAllChatsDialogOpen] = useState(false);
+  const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
+  const [customizationFormData, setCustomizationFormData] = useState({
+    industry: '',
+    role: '',
+    experienceLevel: '',
+    researchInterests: '',
+    additionalPreferences: ''
+  });
   
   // Load user profile data
   useEffect(() => {
@@ -759,100 +785,166 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
     setIsDeleteDialogOpen(false);
   };
 
+  // Add this effect to initialize customization form with user profile data
+  useEffect(() => {
+    if (userProfile) {
+      setCustomizationFormData({
+        industry: userProfile.industry || '',
+        role: userProfile.role || '',
+        experienceLevel: userProfile.experienceLevel || '',
+        researchInterests: userProfile.researchInterests || '',
+        additionalPreferences: userProfile.additionalPreferences || ''
+      });
+    }
+  }, [userProfile]);
+
+  // Handle form change for customization
+  const handleCustomizationChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCustomizationFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle select change for customization
+  const handleCustomizationSelectChange = (name: string, value: string) => {
+    setCustomizationFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle submit for customization
+  const handleCustomizationSubmit = async () => {
+    try {
+      // Get current user
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Update user metadata with the form data
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          ...customizationFormData,
+          has_completed_onboarding: true
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      setUserProfile({
+        ...userProfile,
+        ...customizationFormData
+      });
+      
+      // Close dialog and show success message
+      setIsCustomizeDialogOpen(false);
+      toast({
+        title: "AI Settings Updated",
+        description: "Your AI assistant has been customized successfully",
+      });
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Failed to update your AI settings. Please try again.",
+      });
+    }
+  };
+
+  // Delete all chats function
+  const handleDeleteAllChats = () => {
+    // Clear all pages from state and localStorage
+    setPages([]);
+    localStorage.removeItem('chatPages');
+    
+    // Reset current page state
+    setActivePage(null);
+    setPageName('New page');
+    setChatHistory([]);
+    setHasTitleChanged(false);
+    
+    // Navigate to dashboard root
+    navigate('/dashboard');
+    
+    // Close dialog and show success message
+    setIsDeleteAllChatsDialogOpen(false);
+    toast({
+      title: "All Chats Deleted",
+      description: "All your chat history has been deleted",
+    });
+  };
+
+  // Add this function to handle customization button click
+  const handleCustomizeButtonClick = () => {
+    setIsCustomizeDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen flex">
       {/* Sidebar - fixed position */}
       <div className="w-48 bg-[#f7f7f7] flex flex-col fixed h-screen left-0 top-0 z-10">
-        {/* Chatsector Logo at the top */}
-        <div className="p-4 flex items-center justify-center border-b border-gray-200">
-          <h1 className="font-libre text-xl font-bold text-chatsector-black">Chatsector</h1>
+        {/* Sidebar header with logo */}
+        <div className="p-4 flex items-center gap-2 border-b border-gray-200">
+          <span className="text-chatsector-orange font-bold text-2xl">CS</span>
+          <span className="font-bold text-lg">Chatsector</span>
         </div>
         
-        {/* New page button */}
-        <button 
-          className="w-full text-left px-4 py-2 mb-2 flex items-center text-sm text-gray-700 font-medium hover:bg-gray-200"
-          onClick={() => createNewPage()}
-        >
-          + New Chat
-        </button>
-        
-        {/* Chat history - scrollable middle section */}
-        <div className="flex-grow overflow-y-auto">
-          <div className="space-y-1 px-2">
-            {pages.map(page => (
-              <div
-                key={page.id}
-                className={`w-full text-left px-2 py-2 rounded flex items-center justify-between text-sm group ${
-                  activePage?.id === page.id ? 'bg-gray-200' : 'hover:bg-gray-100'
-                }`}
-              >
-                <div 
-                  className="flex items-center truncate cursor-pointer flex-grow"
-                  onClick={() => handlePageSelect(page.id)}
-                >
-                  <MessageSquare size={14} className="mr-2 text-gray-500 flex-shrink-0" />
-                  <span className="truncate">{truncateTitle(page.title)}</span>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button 
-                      className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded-sm hover:bg-gray-200"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreHorizontal size={14} className="text-gray-500" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem 
-                      className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                      onClick={(e) => handleDeletePage(page.id, e as React.MouseEvent)}
-                    >
-                      <Trash2 size={14} className="mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
-          </div>
+        {/* New chat button */}
+        <div className="p-3">
+          <Button
+            onClick={() => createNewPage()}
+            className="w-full bg-white text-chatsector-black hover:bg-gray-100 border border-gray-200 shadow-sm"
+          >
+            <MessageSquare size={14} className="mr-2" />
+            New Chat
+          </Button>
         </div>
         
-        {/* Profile section - now at the bottom */}
-        <div className="mt-auto border-t border-gray-200">
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-[#e5e5e5] transition-colors">
-                <div className="flex items-center">
-                  <Avatar className="h-8 w-8 bg-[#d9d9d9]">
-                    <AvatarFallback className="text-[#222222]">{user?.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-                  </Avatar>
-                  <span className="ml-2 text-sm font-medium text-[#222222] truncate max-w-[70px]">
-                    {user?.email?.split('@')[0] || 'user'}
-                  </span>
-                </div>
-                <ChevronDown size={16} className="text-[#737373]" />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-0 bg-white border border-gray-200 shadow-md rounded-md">
-              <div className="py-1">
-                <button className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-sm">
-                  <Settings size={16} />
-                  <span>Settings</span>
-                </button>
-                <button className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-sm">
-                  <Palette size={16} />
-                  <span>Customization</span>
-                </button>
-                <button 
-                  className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-sm"
-                  onClick={handleLogout}
-                >
-                  <LogOut size={16} />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </PopoverContent>
-          </Popover>
+        {/* Pages list */}
+        <div className="flex-grow overflow-y-auto p-2 space-y-1">
+          {pages.map(page => (
+            <Button
+              key={page.id}
+              variant="ghost"
+              className={`w-full justify-start text-sm mb-1 h-auto py-2 px-3 font-normal ${
+                activePage?.id === page.id ? 'bg-gray-200 hover:bg-gray-200' : ''
+              }`}
+              onClick={() => handlePageSelect(page.id)}
+            >
+              <div className="truncate text-left">{page.title}</div>
+            </Button>
+          ))}
+        </div>
+        
+        {/* User section with dropdown for settings and logout */}
+        <div className="mt-auto p-2 border-t border-gray-200">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-start p-2 gap-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="bg-chatsector-orange text-white text-xs">
+                    {user?.email?.substring(0, 2).toUpperCase() || "AI"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-normal truncate max-w-[7rem]">
+                  {user?.email || "User"}
+                </span>
+                <ChevronDown size={14} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem className="gap-2" onClick={() => setIsDeleteAllChatsDialogOpen(true)}>
+                <Trash2 size={14} />
+                <span>Delete All Chats</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2" onClick={handleLogout}>
+                <LogOut size={14} />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -954,7 +1046,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
               ) : (
                 <div className="flex flex-col items-start">
                   {showCustomizeButton && (
-                    <button className="text-sm text-gray-500 mb-1 flex items-center gap-1 hover:text-gray-700 transition-colors animate-fadeIn">
+                    <button 
+                      className="text-sm text-gray-500 mb-1 flex items-center gap-1 hover:text-gray-700 transition-colors animate-fadeIn"
+                      onClick={handleCustomizeButtonClick}
+                    >
                       <Palette size={14} className="text-gray-500" /> Customize Page Research
                     </button>
                   )}
@@ -1069,6 +1164,115 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Add this - Delete All Chats confirmation dialog */}
+      <AlertDialog open={isDeleteAllChatsDialogOpen} onOpenChange={setIsDeleteAllChatsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete All Chats</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all your chat history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllChats}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Add this - Customization dialog */}
+      <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Customize Your AI Assistant</DialogTitle>
+            <DialogDescription>
+              Update your preferences to make your AI research assistant more personalized
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="industry">Your Industry</Label>
+              <Input
+                id="industry"
+                name="industry"
+                value={customizationFormData.industry}
+                onChange={handleCustomizationChange}
+                placeholder="Finance, Healthcare, Education, etc."
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="role">Your Role</Label>
+              <Input
+                id="role"
+                name="role"
+                value={customizationFormData.role}
+                onChange={handleCustomizationChange}
+                placeholder="Manager, Analyst, Student, etc."
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="experienceLevel">Experience Level</Label>
+              <Select
+                value={customizationFormData.experienceLevel}
+                onValueChange={(value) => handleCustomizationSelectChange('experienceLevel', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your experience level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="researchInterests">Research Interests</Label>
+              <Textarea
+                id="researchInterests"
+                name="researchInterests"
+                value={customizationFormData.researchInterests}
+                onChange={handleCustomizationChange}
+                placeholder="What specific aspects of your industry are you interested in researching?"
+                className="min-h-[100px]"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="additionalPreferences">Additional Preferences (Optional)</Label>
+              <Textarea
+                id="additionalPreferences"
+                name="additionalPreferences"
+                value={customizationFormData.additionalPreferences}
+                onChange={handleCustomizationChange}
+                placeholder="Any other preferences on how your AI assistant should work?"
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCustomizeDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" onClick={handleCustomizationSubmit}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
