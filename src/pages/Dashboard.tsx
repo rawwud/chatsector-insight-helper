@@ -5,7 +5,7 @@ import { Input } from "../components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import WelcomeCard from '../components/WelcomeCard';
-import { ArrowUp, ChevronDown, Settings, LogOut, Palette, Star, MoreHorizontal, Lock, Edit, MessageSquare, Trash2 } from 'lucide-react';
+import { ArrowUp, ChevronDown, Settings, LogOut, Palette, Star, MoreHorizontal, Lock, Edit, MessageSquare, Trash2, ExternalLink, X } from 'lucide-react';
 import { useToast } from "../components/ui/use-toast";
 import { Groq } from 'groq-sdk';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,11 +29,17 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 import { supabase } from '../lib/supabase';
+import axios from 'axios';
 
 interface PageData {
   id: string;
   title: string;
-  messages: {type: 'user' | 'ai', content: string, key: string}[];
+  messages: {
+    type: 'user' | 'ai', 
+    content: string, 
+    key: string,
+    sources?: {title: string, url: string, content: string}[]
+  }[];
   createdAt: number;
 }
 
@@ -51,7 +57,12 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
   const [activePage, setActivePage] = useState<PageData | null>(null);
   const [pageName, setPageName] = useState('New page');
   const [userInput, setUserInput] = useState('');
-  const [chatHistory, setChatHistory] = useState<{type: 'user' | 'ai', content: string, key: string}[]>([]);
+  const [chatHistory, setChatHistory] = useState<{
+    type: 'user' | 'ai', 
+    content: string, 
+    key: string,
+    sources?: {title: string, url: string, content: string}[]
+  }[]>([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showCustomizeButton, setShowCustomizeButton] = useState(false);
@@ -63,6 +74,8 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const [showSourcesSidebar, setShowSourcesSidebar] = useState(false);
+  const [currentSources, setCurrentSources] = useState<{title: string, url: string, content: string}[]>([]);
   
   // Load user profile data
   useEffect(() => {
@@ -82,6 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
   useEffect(() => {
     const storedPages = localStorage.getItem('chatPages');
     if (storedPages) {
+      try {
       const parsedPages = JSON.parse(storedPages) as PageData[];
       setPages(parsedPages);
       
@@ -96,8 +110,6 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
             setPages(updatedPages);
             localStorage.setItem('chatPages', JSON.stringify(updatedPages));
             
-            // Toast notification removed
-            
             // Redirect to dashboard
             navigate('/dashboard');
           } else {
@@ -105,6 +117,19 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
             setActivePage(foundPage);
             setPageName(foundPage.title);
             setChatHistory(foundPage.messages);
+              
+              // If there are AI messages with sources, initialize currentSources with the most recent one
+              const messagesWithSources = foundPage.messages.filter(
+                msg => msg.type === 'ai' && msg.sources && msg.sources.length > 0
+              );
+              if (messagesWithSources.length > 0) {
+                // Use the sources from the most recent AI message
+                const mostRecentMessage = messagesWithSources[messagesWithSources.length - 1];
+                if (mostRecentMessage.sources) {
+                  setCurrentSources(mostRecentMessage.sources);
+                }
+              }
+              
             setHasTitleChanged(foundPage.title !== 'New page');
             setShowWelcome(false);
           }
@@ -112,6 +137,11 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
           // If page not found, redirect to dashboard
           navigate('/dashboard');
         }
+        }
+      } catch (error) {
+        console.error('Error parsing stored pages:', error);
+        // Fallback to empty pages if parsing fails
+        setPages([]);
       }
     }
   }, [pageId, navigate]);
@@ -235,14 +265,60 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
       setStreamedResponse('');
 
       try {
-        // Initialize GROQ client with updated API key and dangerouslyAllowBrowser option
-        const groq = new Groq({
-          apiKey: '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',
-          dangerouslyAllowBrowser: true, // Important: Allow browser usage
-        });
-
-        // Create system message based on user profile
-        let systemMessage = "You are a helpful AI research assistant.";
+        // Tavily API for web search - limited to 5 results
+        const tavily_api_key = "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";
+        
+        // Search the web first
+        const searchResponse = await axios.post(
+          'https://api.tavily.com/search',
+          {
+            query: messageToSend,
+            search_depth: "advanced",
+            max_results: 5, // Limit to 5 search results as requested
+            include_domains: [],
+            exclude_domains: []
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${tavily_api_key}`
+            }
+          }
+        );
+        
+        const searchResults = searchResponse.data.results;
+        
+        // Process search results
+        const key_entities = searchResults.map(result => result.title.split(' ').slice(0, 2).join(' ')).slice(0, 3);
+        
+        // Create a simple sentiment distribution (placeholder - normally would use NLP)
+        const sentiment_analysis = {
+          source_diversity: 0.8,
+          sentiment_distribution: {
+            positive: 0.5,
+            negative: 0.2,
+            neutral: 0.3
+          }
+        };
+        
+        // Format sources for the prompt
+        const formatted_sources = searchResults.map((result, index) => 
+          `Source ${index + 1}: ${result.title}\nURL: ${result.url}\nContent: ${result.content}\n`
+        ).join('\n');
+        
+        // Metadata context for the AI
+        const metadata_context = `
+        METADATA CONTEXT (for your awareness only, don't mention this directly):
+        - Key entities detected: ${key_entities.join(', ')}
+        - Source diversity score: ${sentiment_analysis.source_diversity.toFixed(2)} (higher is more diverse)
+        - Sentiment distribution: Positive: ${sentiment_analysis.sentiment_distribution.positive}, 
+          Negative: ${sentiment_analysis.sentiment_distribution.negative}, 
+          Neutral: ${sentiment_analysis.sentiment_distribution.neutral}
+        `;
+        
+        // Create comprehensive system message based on user profile
+        // This will be the ONLY place where user profile info is included
+        let systemMessage = "You are a helpful AI research assistant with access to the internet for real-time data.";
         
         if (userProfile) {
           systemMessage = `You are a specialized AI research assistant for a ${userProfile.industry || "general"} professional`;
@@ -274,20 +350,64 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
           }
         }
 
-        // Prepare correctly typed messages for GROQ API
-        const messages = [
-          { role: 'system' as const, content: systemMessage },
-          ...chatHistory.map(msg => ({
-            role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
-            content: msg.content
-          })),
-          { role: 'user' as const, content: messageToSend }
-        ];
+        // Add web search capabilities and prompt to the system message
+        systemMessage += `
+        
+        You have access to the internet for real-time data. Here's how to use this information:
+        
+        1. Directly answer the query
+        2. Answer like a normal chatbot or AI but make it clear you have access to the internet for real-time data
+        3. Include in-line citations [1], [2], etc. after statements that reference specific sources
+        4. Don't include the URLs or sources directly in your response text
+        5. Prioritize the most relevant information from the sources
+        6. Reply with detailed and informative content
+        
+        ${metadata_context}
+        
+        Here are the sources you can use:
+        
+        ${formatted_sources}
+        `;
+
+        // Initialize GROQ client with updated API key and dangerouslyAllowBrowser option
+        const groq = new Groq({
+          apiKey: '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',
+          dangerouslyAllowBrowser: true, // Important: Allow browser usage
+        });
+
+        // Prepare messages array for GROQ API with correct type
+        const messages: Array<{
+          role: 'system' | 'user' | 'assistant',
+          content: string
+        }> = [];
+        
+        // Add system message
+        messages.push({ 
+          role: 'system', 
+          content: systemMessage 
+        });
+        
+        // Get only the most recent AI response, if available
+        const lastAiMessage = chatHistory.filter(msg => msg.type === 'ai').pop();
+        
+        // Add the previous assistant message if available
+        if (lastAiMessage) {
+          messages.push({ 
+            role: 'assistant', 
+            content: lastAiMessage.content 
+          });
+        }
+        
+        // Add the current user message
+        messages.push({ 
+          role: 'user', 
+          content: messageToSend 
+        });
 
         // Make the API call with fixed types
         const chatCompletion = await groq.chat.completions.create({
           messages,
-          model: "llama-3.3-70b-versatile",
+          model: "meta-llama/llama-4-scout-17b-16e-instruct", // Use the requested model
           temperature: 0.7,
           max_tokens: 1024,
           top_p: 1,
@@ -295,7 +415,50 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
         });
 
         // Get the response content
-        const responseContent = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+        let responseContent = chatCompletion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+        
+        // Store the search results in state for later use in the sidebar
+        const searchResultsForStorage = searchResults.map(result => ({
+          title: result.title,
+          url: result.url,
+          content: result.content
+        }));
+        
+        setCurrentSources(searchResultsForStorage);
+        
+        // Process the response to add the Sources button
+        const hasSources = responseContent.includes("Sources:") || responseContent.includes("[1]") || 
+                          responseContent.includes("[2]") || responseContent.includes("[3]") ||
+                          searchResults.length > 0; // Always consider having sources if search results exist
+        
+        // Find and replace the Sources section with a button, or add one if missing
+        if (hasSources) {
+          // First, ensure all citation numbers are properly formatted for clicking
+          responseContent = responseContent.replace(/\[(\d+)\]/g, '<span class="citation-number" data-source-id="$1">[$1]</span>');
+          
+          // Then handle the Sources section if it exists
+          if (responseContent.includes("Sources:") || responseContent.includes("SOURCES:") || 
+              responseContent.includes("References:") || responseContent.includes("REFERENCES:")) {
+            
+            // Split content at "Sources:" or similar heading
+            const parts = responseContent.split(/Sources:|SOURCES:|References:|REFERENCES:/i);
+            
+            if (parts.length > 1) {
+              // Count the number of sources
+              const sourcesText = parts[1];
+              const sourceCount = (sourcesText.match(/\[\d+\]/g) || []).length || 
+                                 (sourcesText.match(/Source \d+:/g) || []).length || 
+                                 searchResults.length;
+              
+              // Use only the main content part
+              responseContent = parts[0] + `\n\n<div class="sources-button" data-sources="${sourceCount}">${sourceCount} sources</div>`;
+            }
+          } else {
+            // If no Sources section is found but we have search results, add a sources button
+            const sourceCount = searchResults.length;
+            responseContent += `\n\n<div class="sources-button" data-sources="${sourceCount}">${sourceCount} sources</div>`;
+          }
+        }
         
         // Set loading to false first to remove "Thinking..."
         setIsLoading(false);
@@ -319,7 +482,15 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
         
         // Add AI response to chat history after streaming completes
         setIsStreaming(false);
-        setChatHistory(prev => [...prev, {type: 'ai', content: responseContent, key: Date.now().toString()}]);
+        setChatHistory(prev => [
+          ...prev, 
+          {
+            type: 'ai', 
+            content: responseContent, 
+            key: Date.now().toString(),
+            sources: searchResultsForStorage // Always store sources with each message
+          }
+        ]);
         
         // If this is the first message and title hasn't been changed, set the title based on the first few words
         if (chatHistory.length === 0 && !hasTitleChanged) {
@@ -330,7 +501,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
           setHasTitleChanged(true);
         }
       } catch (error) {
-        console.error('Error calling GROQ API:', error);
+        console.error('Error processing request:', error);
         toast({
           title: "Error",
           description: "Failed to get AI response. Please try again.",
@@ -448,13 +619,110 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
     // Convert markdown to HTML
     const rawHtml = marked.parse(content) as string;
     
-    // Sanitize the HTML to prevent XSS attacks
-    const sanitizedHtml = DOMPurify.sanitize(rawHtml, {
-      ALLOWED_TAGS: ['p', 'b', 'i', 'em', 'strong', 'a', 'ul', 'ol', 'li', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
-      ALLOWED_ATTR: ['href', 'target', 'rel']
-    });
+    // Make sure all citation numbers are properly formatted, even after markdown processing
+    let processedHtml = rawHtml.replace(/\[(\d+)\]/g, '<span class="citation-number" data-source-id="$1">[$1]</span>');
     
-    return sanitizedHtml;
+    // Add custom attributes to the DOMPurify configuration to allow our custom attributes
+    const sanitizeConfig = {
+      ADD_ATTR: ['data-source-id', 'data-sources', 'data-message-key'],
+      ADD_TAGS: ['style', 'span'], // Ensure span tags are preserved
+      ALLOW_DATA_ATTR: true
+    };
+    
+    // Sanitize HTML with our custom configuration
+    let sanitized = DOMPurify.sanitize(processedHtml, sanitizeConfig);
+    
+    // Add custom styling for sources button and citation numbers
+    if (sanitized.includes('class="sources-button"') || sanitized.includes('class="citation-number"')) {
+      sanitized += `
+        <style>
+          .sources-button {
+            display: inline-block;
+            padding: 4px 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #666;
+            cursor: pointer;
+            margin-top: 10px;
+          }
+          .sources-button:hover {
+            background-color: #e9e9e9;
+          }
+          .sources-button::before {
+            content: '📚 ';
+          }
+          .citation-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            padding: 0 4px;
+            margin: 0 2px;
+            font-size: 0.85em;
+            color: #555;
+            cursor: pointer;
+            transition: background-color 0.2s;
+          }
+          .citation-number:hover {
+            background-color: #e0e0e0;
+            text-decoration: none;
+          }
+        </style>
+      `;
+    }
+    
+    return sanitized;
+  };
+
+  // Handle click on sources button - updated to get sources from message
+  const handleSourcesClick = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    
+    // Find the closest message container
+    const messageContainer = target.closest('.message-container');
+    
+    if (target.classList.contains('sources-button') && messageContainer) {
+      // Get the message index from the data attribute
+      const messageKey = messageContainer.getAttribute('data-message-key');
+      if (messageKey) {
+        // Find the message with this key
+        const message = chatHistory.find(msg => msg.key === messageKey);
+        if (message && message.sources && message.sources.length > 0) {
+          setCurrentSources(message.sources);
+          setShowSourcesSidebar(true);
+        } else {
+          // Fallback if message sources are not available for some reason
+          toast({
+            title: "Source information",
+            description: "The sources for this response are not available.",
+            variant: "default",
+          });
+        }
+      }
+    }
+    
+    if (target.classList.contains('citation-number')) {
+      const sourceId = target.getAttribute('data-source-id');
+      const messageKey = target.closest('.message-container')?.getAttribute('data-message-key');
+      
+      if (sourceId && messageKey) {
+        const message = chatHistory.find(msg => msg.key === messageKey);
+        if (message && message.sources && message.sources[parseInt(sourceId) - 1]) {
+          const source = message.sources[parseInt(sourceId) - 1];
+          window.open(source.url, '_blank');
+        } else {
+          // Fallback for when the specific citation source is not found
+          toast({
+            title: "Source not found",
+            description: "The source for this citation could not be located.",
+            variant: "default",
+          });
+        }
+      }
+    }
   };
 
   // Add a function to handle page deletion
@@ -588,8 +856,45 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
         </div>
       </div>
 
+      {/* Sources Sidebar - only visible when sources are being viewed */}
+      {showSourcesSidebar && (
+        <div className="w-80 bg-white flex flex-col fixed h-screen right-0 top-0 z-20 border-l border-gray-200 shadow-lg transition-all duration-300 ease-in-out">
+          <div className="p-4 flex items-center justify-between border-b border-gray-200">
+            <h2 className="font-medium text-lg">Sources</h2>
+            <button
+              className="p-1 rounded-full hover:bg-gray-100"
+              onClick={() => setShowSourcesSidebar(false)}
+            >
+              <X size={18} />
+            </button>
+          </div>
+          
+          <div className="flex-grow overflow-y-auto p-4">
+            {currentSources.map((source, index) => (
+              <div key={index} className="mb-6 pb-4 border-b border-gray-100 last:border-0">
+                <div className="flex items-center mb-2">
+                  <span className="flex items-center justify-center bg-gray-100 text-gray-600 w-6 h-6 rounded-full text-sm font-medium mr-2">
+                    {index + 1}
+                  </span>
+                  <h3 className="font-medium text-gray-800">{source.title}</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-2 line-clamp-3">{source.content}</p>
+                <a 
+                  href={source.url} 
+                  target="_blank"
+                  rel="noopener noreferrer" 
+                  className="text-sm flex items-center text-blue-600 hover:underline mt-1"
+                >
+                  Visit source <ExternalLink size={12} className="ml-1" />
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main content - using white background with margin to account for fixed sidebar */}
-      <div className="flex-grow flex flex-col bg-white ml-48">
+      <div className={`flex-grow flex flex-col bg-white ml-48 ${showSourcesSidebar ? 'mr-80' : ''} transition-all duration-300`}>
         {/* New upper bar */}
         <div className="w-full bg-white py-3 px-6 flex justify-between items-center sticky top-0 z-10">
           <div className="flex items-center gap-1 text-sm">
@@ -663,7 +968,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
               )}
             </div>
 
-            {/* Chat area - slightly adjusted positioning */}
+            {/* Chat area - with click handler for sources */}
             <div className="flex-grow overflow-y-auto mb-6 pl-4">
               {chatHistory.length === 0 ? (
                 <div className="text-gray-400 italic text-center mt-20">
@@ -672,7 +977,11 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
               ) : (
                 <div className="space-y-8">
                   {chatHistory.map((message) => (
-                    <div key={message.key} className="space-y-2 animate-fadeIn">
+                    <div 
+                      key={message.key} 
+                      className="space-y-2 animate-fadeIn message-container" 
+                      data-message-key={message.key}
+                    >
                       {message.type === 'user' ? (
                         <div className="text-base">{message.content}</div>
                       ) : (
@@ -681,6 +990,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isNewUser = false }) => {
                           <div 
                             className="text-base leading-relaxed markdown-content"
                             dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
+                            onClick={handleSourcesClick}
                           />
                         </>
                       )}
