@@ -14,6 +14,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any; data: any; }>;
   updatePassword: (newPassword: string) => Promise<{ error: any; data: any; }>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,13 +26,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // This function can be called to manually refresh the session
+  const refreshSession = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      try {
+        // Check if there's a stored session in localStorage
+        const storedData = localStorage.getItem('supabase.auth.token');
+        const hasStoredSession = storedData && storedData.length > 0;
+        
+        // Get current session from Supabase
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (currentSession) {
+          // We have a valid session
+          setSession(currentSession);
+          setUser(currentSession.user);
+        } else if (hasStoredSession) {
+          // We have stored data but no valid session - try to refresh
+          console.log('Attempting to refresh stored session...');
+          await refreshSession();
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -165,6 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle,
     resetPassword,
     updatePassword,
+    refreshSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
